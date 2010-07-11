@@ -13,12 +13,22 @@ class SecretBallotMiddleware(object):
 
 class SecretBallotIpMiddleware(SecretBallotMiddleware):
     def generate_token(self, request):
-        return request.META['REMOTE_ADDR']
-
+        try:
+            return request.META['REMOTE_ADDR']
+        except:
+            return None
+            
 class SecretBallotIpUseragentMiddleware(SecretBallotMiddleware):
     def generate_token(self, request):
         try:
-            s = ''.join((request.META['REMOTE_ADDR'], request.META['HTTP_USER_AGENT']))
+            if request.user.is_authenticated():
+                s = request.user.username
+            else:                     
+                s = ''.join((request.META['REMOTE_ADDR'], request.META['HTTP_USER_AGENT']))
+            
+            return md5(s).hexdigest()
+                    
         except:
             return None
-        return md5(s).hexdigest()
+        
+
